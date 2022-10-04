@@ -66,20 +66,20 @@
  ****************************************************************/
 
 typedef struct {
-    __IO uint32_t id_section;
-    __IO uint32_t dlc_section;
-    __IO uint32_t data[64 / 4];
+    uint32_t id_section;
+    uint32_t dlc_section;
+    uint32_t data[64 / 4];
 } FDCAN_FIFO_TypeDef;
 
 #define FDCAN_XTD (1<<30)
 #define FDCAN_RTR (1<<29)
 
 typedef struct {
-    __IO uint32_t FLS[28]; // Filter list standard
-    __IO uint32_t FLE[16]; // Filter list extended
+    uint32_t FLS[28]; // Filter list standard
+    uint32_t FLE[16]; // Filter list extended
     FDCAN_FIFO_TypeDef RXF0[3];
     FDCAN_FIFO_TypeDef RXF1[3];
-    __IO uint32_t TEF[6]; // Tx event FIFO
+    uint32_t TEF[6]; // Tx event FIFO
     FDCAN_FIFO_TypeDef TXFIFO[3];
 } FDCAN_MSG_RAM_TypeDef;
 
@@ -116,6 +116,7 @@ canbus_send(struct canbus_msg *msg)
     txfifo->dlc_section = (msg->dlc & 0x0f) << 16;
     txfifo->data[0] = msg->data32[0];
     txfifo->data[1] = msg->data32[1];
+    barrier();
     SOC_CAN->TXBAR = ((uint32_t)1 << w_index);
     return CANMSG_DATA_LEN(msg);
 }
@@ -158,6 +159,7 @@ canbus_set_filter(uint32_t id)
 #endif
 
     /* Leave the initialisation mode for the filter */
+    barrier();
     SOC_CAN->CCCR &= ~FDCAN_CCCR_CCE;
     SOC_CAN->CCCR &= ~FDCAN_CCCR_INIT;
 }
@@ -186,6 +188,7 @@ CAN_IRQHandler(void)
             msg.dlc = (rxf0->dlc_section >> 16) & 0x0f;
             msg.data32[0] = rxf0->data[0];
             msg.data32[1] = rxf0->data[1];
+            barrier();
             SOC_CAN->RXF0A = idx;
 
             // Process packet
@@ -295,7 +298,7 @@ can_init(void)
     canbus_set_filter(0);
 
     /*##-3- Configure Interrupts #################################*/
-    armcm_enable_irq(CAN_IRQHandler, CAN_IT0_IRQn, 0);
+    armcm_enable_irq(CAN_IRQHandler, CAN_IT0_IRQn, 1);
     SOC_CAN->ILE = FDCAN_ILE_EINT0;
     SOC_CAN->IE = FDCAN_IE_RF0NE | FDCAN_IE_TC;
 }
