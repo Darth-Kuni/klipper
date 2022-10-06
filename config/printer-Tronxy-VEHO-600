@@ -1,0 +1,151 @@
+[mcu]
+serial: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+restart_method: command
+
+[pause_resume]
+
+[display_status]
+
+[virtual_sdcard]
+path: ~/gcode_files
+
+[include Filamentchange.cfg]
+[include mainsail.cfg]
+[include Macros.cfg]
+[include start+end.cfg]
+[include tilt.cfg]
+[include timeout.cfg]
+[include screwtilt.cfg]
+[include bed_screws.cfg]
+#[include homing_override.cfg]
+
+[printer]
+kinematics: cartesian
+max_velocity: 5000
+max_accel: 5000
+max_z_velocity: 25
+max_z_accel: 30
+
+[stepper_x]
+step_pin: PE5
+dir_pin: !PF1
+enable_pin: !PF0
+microsteps: 16
+rotation_distance: 60
+endstop_pin: !PC15
+position_endstop: -1
+position_min: -1
+position_max: 600 # for bed mesh
+homing_speed: 50
+homing_retract_dist: 10
+second_homing_speed: 10.0
+
+[stepper_y]
+step_pin: PF9
+dir_pin:  PF3
+enable_pin: !PF5
+microsteps: 16
+rotation_distance: 60
+endstop_pin: !PC14
+position_endstop: 0
+position_max: 600
+homing_retract_dist: 10
+homing_speed: 50.0
+second_homing_speed: 10.0
+
+[stepper_z]
+step_pin: PF6
+dir_pin: !PF4
+enable_pin: !PF7
+microsteps: 16
+rotation_distance: 12
+endstop_pin: probe:z_virtual_endstop
+#position_endstop: -5
+position_max: 605
+position_min: -15
+homing_speed: 50.0
+
+[stepper_z1]
+step_pin: PA6
+dir_pin: !PF15
+enable_pin: !PA5
+microsteps: 16
+rotation_distance: 12
+
+[safe_z_home]
+home_xy_position: 300, 300
+speed: 50
+z_hop: 10
+z_hop_speed: 5
+
+[extruder]
+step_pin: PB1
+dir_pin: PF13
+enable_pin: !PF14
+microsteps: 16
+rotation_distance: 22.172 # Needs to be tweaked
+gear_ratio: 50:17 # BMG Clone ratio per klipper docs
+nozzle_diameter: 0.600
+filament_diameter: 1.750
+heater_pin: PG7
+sensor_type: ATC Semitec 104GT-2
+sensor_pin: PC3
+#control: pid
+#pid_Kp: 20.72
+#pid_Ki: 1.88
+#pid_Kd: 57.18
+min_temp: 0
+max_temp: 320
+max_extrude_only_distance: 200
+min_extrude_temp: 0 # dangerous, but bowden loading is much easier without it
+
+[heater_bed]
+heater_pin: PE2
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC2
+min_temp: 0
+max_temp: 150
+#control: pid
+#pid_Kp: 73.932
+#pid_Ki: 1.521
+#pid_Kd: 898.279
+
+[heater_fan hotend_fan]
+heater: extruder
+heater_temp: 50.0
+pin: PG9
+
+[fan]
+pin: PG0
+
+[controller_fan drivers_fan]
+#[fan]
+pin: PD7
+
+[filament_switch_sensor filament_sensor]
+pause_on_runout: True
+runout_gcode:
+  M25
+switch_pin: !PE6
+
+#[output_pin beeper]
+#pin: PA8
+
+[bed_mesh]
+speed: 120
+probe_count: 5, 5
+horizontal_move_z: 5
+algorithm: bicubic
+mesh_min : 100, 30
+mesh_max : 600, 570
+mesh_pps: 0
+fade_start: 1
+fade_end: 10
+fade_target: 0
+
+[probe]
+x_offset: -38.5
+y_offset:  10
+pin: !PE3
+speed: 30
+#z_offset: 0
